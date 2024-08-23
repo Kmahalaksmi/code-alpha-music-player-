@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Player</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #ff7e5f, #feb47b);
+        }
+
+        .player-container {
+            background: #282c34;
+            border-radius: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            width: 360px;
+            color: #fff;
+            text-align: center;
+        }
+
+        .player-header h1 {
+            margin: 0;
+            font-size: 30px;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .player-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .player-controls button {
+            background-color: #61dafb;
+            border: none;
+            color: #fff;
+            padding: 15px;
+            border-radius: 50%;
+            margin: 0 10px;
+            cursor: pointer;
+            font-size: 20px;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .player-controls button:hover {
+            background-color: #4fa3d8;
+            transform: scale(1.1);
+        }
+
+        .player-controls button.active {
+            background-color: #21a0f6;
+        }
+
+        .playlist {
+            margin-bottom: 20px;
+        }
+
+        .playlist ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .playlist li {
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            margin: 5px 0;
+            background: #333;
+        }
+
+        .playlist li:hover {
+            background-color: #444;
+        }
+
+        .playlist li.active {
+            background-color: #555;
+            color: #61dafb;
+        }
+
+        .track-info {
+            margin-top: 20px;
+        }
+
+        .track-info p {
+            margin: 5px 0;
+            font-size: 16px;
+        }
+
+        .track-info #trackTitle {
+            font-weight: bold;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="player-container">
+        <div class="player-header">
+            <h1>Music Player</h1>
+        </div>
+        <div class="player-controls">
+            <button id="prevBtn">⏮</button>
+            <button id="playPauseBtn">▶</button>
+            <button id="nextBtn">⏭</button>
+        </div>
+        <div class="playlist">
+            <ul id="playlist">
+                <li data-src="path/to/track1.mp3">Track 1</li>
+                <li data-src="path/to/track2.mp3">Track 2</li>
+                <li data-src="path/to/track3.mp3">Track 3</li>
+            </ul>
+        </div>
+        <div class="track-info">
+            <p id="trackTitle">Title: None</p>
+            <p id="trackDuration">Duration: 0:00</p>
+        </div>
+        <audio id="audioPlayer"></audio>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const audioPlayer = document.getElementById('audioPlayer');
+            const playPauseBtn = document.getElementById('playPauseBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const prevBtn = document.getElementById('prevBtn');
+            const playlist = document.getElementById('playlist');
+            const trackTitle = document.getElementById('trackTitle');
+            const trackDuration = document.getElementById('trackDuration');
+            
+            let isPlaying = false;
+            let currentTrackIndex = 0;
+
+            function loadTrack(index) {
+                const tracks = Array.from(playlist.querySelectorAll('li'));
+                if (index < 0 || index >= tracks.length) return;
+                
+                const track = tracks[index];
+                const src = track.getAttribute('data-src');
+                
+                audioPlayer.src = src;
+                trackTitle.textContent = `Title: ${track.textContent}`;
+                trackDuration.textContent = 'Duration: 0:00';
+
+                tracks.forEach((t, i) => t.classList.toggle('active', i === index));
+                currentTrackIndex = index;
+                audioPlayer.play();
+                playPauseBtn.textContent = '⏸';
+                isPlaying = true;
+            }
+
+            function updateTrackInfo() {
+                const minutes = Math.floor(audioPlayer.currentTime / 60);
+                const seconds = Math.floor(audioPlayer.currentTime % 60).toString().padStart(2, '0');
+                trackDuration.textContent = `Duration: ${minutes}:${seconds}`;
+            }
+
+            function playPause() {
+                if (isPlaying) {
+                    audioPlayer.pause();
+                    playPauseBtn.textContent = '▶';
+                } else {
+                    audioPlayer.play();
+                    playPauseBtn.textContent = '⏸';
+                }
+                isPlaying = !isPlaying;
+            }
+
+            playPauseBtn.addEventListener('click', playPause);
+            nextBtn.addEventListener('click', () => {
+                loadTrack((currentTrackIndex + 1) % playlist.children.length);
+            });
+            prevBtn.addEventListener('click', () => {
+                loadTrack((currentTrackIndex - 1 + playlist.children.length) % playlist.children.length);
+            });
+
+            playlist.addEventListener('click', (e) => {
+                if (e.target.tagName === 'LI') {
+                    const index = Array.from(playlist.children).indexOf(e.target);
+                    loadTrack(index);
+                }
+            });
+
+            audioPlayer.addEventListener('timeupdate', updateTrackInfo);
+
+            // Initialize with the first track
+            loadTrack(0);
+        });
+    </script>
+</body>
+</html>
